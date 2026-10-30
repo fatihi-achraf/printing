@@ -233,6 +233,7 @@ body{padding-block:14px 40px}
   <section class="card" id="connInfoCard" hidden>
     <details><summary>Réglages</summary>
       <div style="margin-block-start:12px;display:flex;flex-direction:column;gap:10px">
+        <label class="field"><span>Sens de l’image (si l’étiquette sort de travers, essaie A, B, C, D)</span><select id="lblR" class="sel"><option value="A">A — tournée de 90° à droite</option><option value="B">B — tournée de 90° à gauche</option><option value="C">C — sans rotation</option><option value="D">D — retournée de 180°</option></select></label>
         <button class="ghost" id="lblTest" type="button">Imprimer une étiquette test</button>
         <p class="hint" id="connInfo"></p>
         <button class="ghost" id="connStop" type="button">Se déconnecter</button>
@@ -247,9 +248,9 @@ body{padding-block:14px 40px}
 'use strict';
 var KEY='carnet-print-v1',MONTHS=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
 var DAYS=['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
-var data={conn:null,orders:[],auto:false,src:'*',printed:[],at:0},toastT=null,syncing=false,syncErr='',baseline=false,printQ=[],printing=false,lbl={on:true,w:60,h:40,dpmm:8,mode:'A'};
+var data={conn:null,orders:[],auto:false,src:'*',printed:[],at:0,mode:'A'},toastT=null,syncing=false,syncErr='',baseline=false,printQ=[],printing=false,lbl={on:true,w:60,h:40,dpmm:8,mode:'A'};
 function $(i){return document.getElementById(i)}
-function load(){try{var p=JSON.parse(localStorage.getItem(KEY)||'null');if(p&&typeof p==='object'){data.conn=(p.conn&&p.conn.u&&p.conn.k)?{u:String(p.conn.u),k:String(p.conn.k)}:null;data.orders=Array.isArray(p.orders)?p.orders:[];data.auto=!!p.auto;data.src=typeof p.src==='string'&&p.src?p.src:'*';data.printed=Array.isArray(p.printed)?p.printed.slice(-800):[];data.at=Number(p.at)||0}}catch(e){}}
+function load(){try{var p=JSON.parse(localStorage.getItem(KEY)||'null');if(p&&typeof p==='object'){data.conn=(p.conn&&p.conn.u&&p.conn.k)?{u:String(p.conn.u),k:String(p.conn.k)}:null;data.orders=Array.isArray(p.orders)?p.orders:[];data.auto=!!p.auto;data.src=typeof p.src==='string'&&p.src?p.src:'*';data.printed=Array.isArray(p.printed)?p.printed.slice(-800):[];data.at=Number(p.at)||0;data.mode=lbl.mode=/^[ABCD]$/.test(p.mode)?p.mode:'A'}}catch(e){}}
 function save(){try{localStorage.setItem(KEY,JSON.stringify(data))}catch(e){}}
 function pad(n){return String(n).padStart(2,'0')}
 function todayStr(){var d=new Date();return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())}
@@ -463,12 +464,14 @@ function init(){
     toast(data.auto?'Impression automatique activée':'Impression automatique arrêtée');
   });
   $('autoSrc').addEventListener('change',function(){data.src=$('autoSrc').value||'*';save()});
+  $('lblR').value=lbl.mode;
+  $('lblR').addEventListener('change',function(){data.mode=lbl.mode=$('lblR').value;save();toast('Sens '+lbl.mode+' enregistré')});
   $('listQ').addEventListener('input',renderList);
   $('listBox').addEventListener('click',function(e){
     var cc=e.target.closest('[data-ocopy]');if(cc){copyCode(cc.dataset.ocopy);return}
     var lb=e.target.closest('[data-olbl]');if(lb){var o=data.orders.filter(function(x){return x.id===lb.dataset.olbl})[0];if(o){printNow(o);render();toast('Étiquette envoyée')}}
   });
-  $('lblTest').addEventListener('click',function(){printLabel({id:'otest'+Date.now().toString(36),p:'Sublimation',n:'Client test',q:12.5,u:'m',pr:1500,t:18750,nt:'Essai étiquette',d:todayStr()})});
+  $('lblTest').addEventListener('click',function(){printLabel({id:'otest'+Date.now().toString(36),p:'Sublimation',n:'Test sens '+lbl.mode,q:12.5,u:'m',pr:1500,t:18750,nt:'Essai étiquette',d:todayStr()})});
   $('connGo').addEventListener('click',function(){
     var er=$('connErr');er.hidden=true;$('connGo').disabled=true;
     connectWith($('connText').value,function(msg){$('connGo').disabled=false;if(msg){er.textContent=msg;er.hidden=false}else $('connText').value=''});
