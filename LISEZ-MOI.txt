@@ -1,0 +1,8 @@
+POSTE D'IMPRESSION - a installer seulement sur le PC branche a l'imprimante d'etiquettes.
+
+1) Mettre ce dossier en ligne comme les autres applications (une adresse https DIFFERENTE de Carnet Production).
+2) Ouvrir l'adresse sur le PC de l'imprimante, coller le lien ou le code CONN1: du machiniste.
+3) Cocher "Imprimer l'etiquette des qu'une nouvelle commande arrive" et choisir de qui (un machiniste, la vente quick ou toutes).
+4) Lancer l'application avec le fichier lancer-poste-impression.bat pour que l'impression parte sans fenetre.
+
+Quand l'imprimante est installee sur le PC principal : utiliser Carnet Production normal et supprimer cette application.
